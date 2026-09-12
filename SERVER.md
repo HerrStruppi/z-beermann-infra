@@ -115,15 +115,14 @@ mkdir -p ~/apps && cd ~/apps && gh repo clone HerrStruppi/z-beermann-infra && gh
 cd ~/apps/z-beermann-infra/new-app && npm ci --omit=dev && cp .env.example .env   # COOLIFY_TOKEN eintragen
 ```
 
-Drei Wege, Claude Code zu benutzen:
+Zwei Wege, Claude Code zu benutzen. Nichts läuft dauerhaft auf dem Server.
 
 | Weg | Claude läuft | Server-Zugriff | Wofür |
 |---|---|---|---|
-| Desktop-App mit SSH-Host `zacha@ubuntu-1` | auf dem Server | ja | Arbeit am Mac, Server-Aufgaben, new-app-CLI, Logs |
+| Desktop-App mit SSH-Host `zacha@ubuntu-1` | auf dem Server, nur während der Sitzung | ja | Arbeit am Mac, Server-Aufgaben, new-app-CLI, Logs |
 | Mobile-App, Cloud-Sitzung mit GitHub-Repo | in Anthropics Cloud | nein | Code unterwegs, PR, Merge auf `main` deployt |
-| `tmux new -s claude` auf dem Server, darin `claude`, plus Remote Control | auf dem Server | ja | Vom Handy Server-Aufgaben und Deploys |
 
-tmux verlassen ohne Beenden: Ctrl+B, dann D. Wieder rein: `tmux attach -t claude`.
+Neue Apps vom Handy: Formular unter `new.z-beermann.de` (nach Phase 5). Notfall per Terminal: `ssh zacha@ubuntu-1`, `claude`.
 
 ## Prüfen
 
