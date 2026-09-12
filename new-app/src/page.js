@@ -5,7 +5,7 @@ export function page({ owner, baseDomain, coolifyUrl }) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Neue App</title>
+<title>Neue App erstellen</title>
 <style>
   :root { color-scheme: light dark; --ink: #1a1a1a; --muted: #6b7280; --line: #d1d5db; --accent: #2b52c9; --bg: #f7f7f8; --card: #fff; --ok: #1e7f57; --bad: #b42318; }
   @media (prefers-color-scheme: dark) { :root { --ink: #e6e8ef; --muted: #9aa3b2; --line: #333a48; --accent: #8aa4ff; --bg: #12151e; --card: #191d29; --ok: #5fcf95; --bad: #f28b82; } }
@@ -16,7 +16,6 @@ export function page({ owner, baseDomain, coolifyUrl }) {
   form, .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 20px; }
   label { display: block; font-weight: 600; font-size: 14px; margin: 14px 0 6px; }
   label:first-child { margin-top: 0; }
-  .hint { font-weight: 400; color: var(--muted); font-size: 13px; }
   input[type=text], textarea { width: 100%; font: inherit; padding: 9px 11px; border: 1px solid var(--line); border-radius: 7px; background: transparent; color: inherit; }
   textarea { font-family: ui-monospace, Menlo, monospace; font-size: 13.5px; min-height: 110px; }
   .row { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
@@ -35,18 +34,18 @@ export function page({ owner, baseDomain, coolifyUrl }) {
 </head>
 <body>
 <main>
-  <h1>Neue App</h1>
+  <h1>Neue App erstellen</h1>
 
   <form id="f">
-    <label for="name">Name</label>
+    <label for="name">Name des GitHub Repository</label>
     <input type="text" id="name" name="name" autocomplete="off" autocapitalize="off" spellcheck="false" pattern="[a-z0-9]([a-z0-9-]*[a-z0-9])?" required placeholder="meine-app">
 
     <div class="row">
       <input type="checkbox" id="storage" name="storage">
-      <label for="storage">Persistenten Speicher erstellen</label>
+      <label for="storage">App benötigt einen persistenten Speicher</label>
     </div>
 
-    <label for="env">Umgebungsvariablen <span class="hint">eine pro Zeile, KEY=WERT, optional</span></label>
+    <label for="env">Umgebungsvariablen</label>
     <textarea id="env" name="env" placeholder="DATABASE_URL=postgres://…&#10;SOME_FLAG=true"></textarea>
 
     <button type="submit" id="go">Anlegen und deployen</button>
