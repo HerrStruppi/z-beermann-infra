@@ -74,8 +74,16 @@ export class Coolify {
     const full = await this.api(`/projects/${project.uuid}`);
     const environment = (full.environments || []).find((e) => e.name === this.cfg.environment);
     if (!environment) throw new Error(`Environment "${this.cfg.environment}" im Projekt nicht gefunden`);
-    this.ids = { project: project.uuid, server: server.uuid, environment: environment.name, githubApp: githubApp.uuid };
+    this.ids = { project: project.uuid, server: server.uuid, environment: environment.name, githubApp: githubApp.uuid, githubAppId: githubApp.id };
     return this.ids;
+  }
+
+  // Prüft über die GitHub-App, ob das Repo existiert und freigegeben ist, bevor ein Deploy ins Leere läuft.
+  async repoExists(fullName) {
+    const ids = await this.resolveIds();
+    const res = await this.api(`/github-apps/${ids.githubAppId}/repositories`);
+    const want = fullName.toLowerCase();
+    return (res.repositories || []).some((r) => String(r.full_name || '').toLowerCase() === want);
   }
 
   async findApp(name) {
@@ -93,13 +101,15 @@ export class Coolify {
     if (!NAME_PATTERN.test(name)) throw new Error(`Ungültiger Name "${name}": nur a-z, 0-9 und -, kein - am Anfang/Ende`);
     if (await this.findApp(name)) throw new Error(`Es gibt schon eine App namens "${name}"`);
     const ids = await this.resolveIds();
+    const repo = opts.repo || `${this.cfg.owner}/${name}`;
+    if (!(await this.repoExists(repo))) throw new Error(`Repo ${repo} nicht gefunden oder für die GitHub-App "${this.cfg.githubApp}" nicht freigegeben`);
     const url = opts.internal ? null : `https://${name}.${this.cfg.baseDomain}`;
     const body = {
       project_uuid: ids.project,
       server_uuid: ids.server,
       environment_name: ids.environment,
       github_app_uuid: ids.githubApp,
-      git_repository: opts.repo || `${this.cfg.owner}/${name}`,
+      git_repository: repo,
       git_branch: opts.branch || 'main',
       build_pack: 'dockerfile',
       dockerfile_location: '/Dockerfile',

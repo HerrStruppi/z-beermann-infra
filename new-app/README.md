@@ -10,6 +10,9 @@ Healthcheck `GET /healthz`, Domain `https://<name>.z-beermann.de`, Auto-Deploy b
 Was abgefragt wird: **Name** (= Repo-Name, Subdomain, Volume-Name), **Persistent Storage** ja/nein
 (Volume `<name>-data` auf `/data`), **Umgebungsvariablen** (`KEY=WERT` pro Zeile).
 
+Vor dem Anlegen wird geprüft, ob `HerrStruppi/<name>` existiert und für die GitHub-App freigegeben ist.
+Wenn nicht, kommt eine klare Meldung statt eines fehlgeschlagenen Builds.
+
 ## Lokal ausführen
 
 ```bash
@@ -47,7 +50,7 @@ Danach: `http://100.105.58.55:3100` (Tailscale-IP des Servers).
 
 ## Coolify-API, die benutzt wird
 
-`GET /projects`, `GET /projects/{uuid}`, `GET /servers`, `GET /github-apps`, `GET /applications`,
+`GET /projects`, `GET /projects/{uuid}`, `GET /servers`, `GET /github-apps`, `GET /github-apps/{id}/repositories`, `GET /applications`,
 `POST /applications/private-github-app`, `PATCH /applications/{uuid}/envs/bulk`,
 `POST /applications/{uuid}/storages`, `POST /applications/{uuid}/start`, `GET /deployments/{uuid}`.
 Token braucht die Rechte `read`, `write`, `deploy`.
