@@ -12,8 +12,7 @@ export function page({ owner, baseDomain, coolifyUrl }) {
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 system-ui, -apple-system, sans-serif; }
   main { max-width: 560px; margin: 0 auto; padding: 32px 20px 64px; }
-  h1 { font-size: 24px; margin: 0 0 4px; }
-  .sub { color: var(--muted); margin: 0 0 24px; font-size: 14px; }
+  h1 { font-size: 24px; margin: 0 0 20px; }
   form, .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 20px; }
   label { display: block; font-weight: 600; font-size: 14px; margin: 14px 0 6px; }
   label:first-child { margin-top: 0; }
@@ -25,7 +24,6 @@ export function page({ owner, baseDomain, coolifyUrl }) {
   .row label { margin: 0; }
   button { margin-top: 20px; width: 100%; font: inherit; font-weight: 600; padding: 12px; border: 0; border-radius: 8px; background: var(--accent); color: #fff; cursor: pointer; }
   button:disabled { opacity: .5; cursor: default; }
-  .preview { font-family: ui-monospace, Menlo, monospace; font-size: 13px; color: var(--muted); margin-top: 6px; }
   ul.steps { list-style: none; padding: 0; margin: 0; }
   ul.steps li { padding: 6px 0; border-bottom: 1px solid var(--line); }
   ul.steps li:last-child { border: 0; }
@@ -38,16 +36,14 @@ export function page({ owner, baseDomain, coolifyUrl }) {
 <body>
 <main>
   <h1>Neue App</h1>
-  <p class="sub">Repo muss den App-Vertrag erfüllen (Dockerfile, Port 3000, /healthz). Alles andere ist Konvention.</p>
 
   <form id="f">
-    <label for="name">Name <span class="hint">= Repo-Name bei ${owner}, Subdomain, Volume-Name</span></label>
-    <input type="text" id="name" name="name" autocomplete="off" autocapitalize="off" spellcheck="false" pattern="[a-z0-9]([a-z0-9-]*[a-z0-9])?" required placeholder="gym-tracker">
-    <div class="preview" id="preview">https://….${baseDomain} ← ${owner}/…</div>
+    <label for="name">Name</label>
+    <input type="text" id="name" name="name" autocomplete="off" autocapitalize="off" spellcheck="false" pattern="[a-z0-9]([a-z0-9-]*[a-z0-9])?" required placeholder="meine-app">
 
     <div class="row">
       <input type="checkbox" id="storage" name="storage">
-      <label for="storage">Persistent Storage <span class="hint">Volume <code>&lt;name&gt;-data</code> auf <code>/data</code></span></label>
+      <label for="storage">Persistenten Speicher erstellen</label>
     </div>
 
     <label for="env">Umgebungsvariablen <span class="hint">eine pro Zeile, KEY=WERT, optional</span></label>
@@ -64,12 +60,8 @@ export function page({ owner, baseDomain, coolifyUrl }) {
 </main>
 <script>
   const $ = (s) => document.querySelector(s);
-  const f = $('#f'), nameEl = $('#name'), preview = $('#preview'), go = $('#go');
+  const f = $('#f'), nameEl = $('#name'), go = $('#go');
   const progress = $('#progress'), steps = $('#steps'), status = $('#status'), links = $('#links');
-  nameEl.addEventListener('input', () => {
-    const n = nameEl.value.trim().toLowerCase();
-    preview.textContent = 'https://' + (n || '…') + '.${baseDomain}  ←  ${owner}/' + (n || '…');
-  });
   const addStep = (text, cls) => { const li = document.createElement('li'); li.textContent = text; if (cls) li.className = cls; steps.appendChild(li); };
   f.addEventListener('submit', async (e) => {
     e.preventDefault();
