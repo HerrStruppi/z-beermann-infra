@@ -21,8 +21,8 @@ app.post('/api/apps', async (c) => {
   try { envs = parseEnvLines(input.env || ''); } catch (e) { return c.json({ error: e.message }, 400); }
   try {
     const steps = [];
-    const created = await coolify.createApp({ name, storage: Boolean(input.storage), envs, repo: input.repo || undefined });
-    steps.push('App angelegt', envs.length ? `${envs.length} Umgebungsvariablen gesetzt` : null, input.storage ? `Volume ${name}-data auf /data` : null);
+    const created = await coolify.createApp({ name, storage: Boolean(input.storage), protect: Boolean(input.protect), envs, repo: input.repo || undefined });
+    steps.push('App angelegt', envs.length ? `${envs.length} Umgebungsvariablen gesetzt` : null, input.storage ? `Volume ${name}-data auf /data` : null, input.protect ? 'Login über tinyauth aktiviert' : null);
     const deploymentUuid = await coolify.deploy(created.uuid);
     steps.push('Deploy gestartet');
     return c.json({ ...created, deploymentUuid, steps: steps.filter(Boolean) });

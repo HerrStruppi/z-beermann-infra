@@ -48,6 +48,32 @@ export function parseEnvLines(text = '') {
   return out;
 }
 
+/**
+ * Traefik-Labels so, wie Coolify sie für eine App mit einer Domain erzeugt, optional mit tinyauth davor.
+ * Coolify versteckt custom_labels in der API-Antwort, deshalb bauen wir sie deterministisch selbst.
+ */
+export function traefikLabels({ uuid, host, port = 3000, protect = false, extra = [] }) {
+  const mw = protect ? 'gzip,tinyauth@docker' : 'gzip';
+  return [
+    'traefik.enable=true',
+    'traefik.http.middlewares.gzip.compress=true',
+    'traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https',
+    `traefik.http.routers.http-0-${uuid}.entryPoints=http`,
+    `traefik.http.routers.http-0-${uuid}.middlewares=redirect-to-https`,
+    `traefik.http.routers.http-0-${uuid}.rule=Host(\`${host}\`) && PathPrefix(\`/\`)`,
+    `traefik.http.routers.http-0-${uuid}.service=http-0-${uuid}`,
+    `traefik.http.routers.https-0-${uuid}.entryPoints=https`,
+    `traefik.http.routers.https-0-${uuid}.middlewares=${mw}`,
+    `traefik.http.routers.https-0-${uuid}.rule=Host(\`${host}\`) && PathPrefix(\`/\`)`,
+    `traefik.http.routers.https-0-${uuid}.service=https-0-${uuid}`,
+    `traefik.http.routers.https-0-${uuid}.tls.certresolver=letsencrypt`,
+    `traefik.http.routers.https-0-${uuid}.tls=true`,
+    `traefik.http.services.http-0-${uuid}.loadbalancer.server.port=${port}`,
+    `traefik.http.services.https-0-${uuid}.loadbalancer.server.port=${port}`,
+    ...extra,
+  ].join('\n');
+}
+
 export class Coolify {
   constructor(config) {
     this.cfg = config;
@@ -103,10 +129,59 @@ export class Coolify {
     return apps.find((a) => a.name === name) || null;
   }
 
+  async setEnvs(uuid, envs) {
+    if (!envs?.length) return;
+    await this.api(`/applications/${uuid}/envs/bulk`, {
+      method: 'PATCH',
+      body: { data: envs.map(({ key, value }) => ({ key, value, is_runtime: true, is_buildtime: false, is_preview: false, is_literal: false })) },
+    });
+  }
+
+  async addStorage(uuid, name, mountPath) {
+    await this.api(`/applications/${uuid}/storages`, { method: 'POST', body: { type: 'persistent', name, mount_path: mountPath } });
+  }
+
+  async setLabels(uuid, labels) {
+    await this.api(`/applications/${uuid}`, { method: 'PATCH', body: { custom_labels: Buffer.from(labels, 'utf8').toString('base64') } });
+  }
+
+  /** Setzt tinyauth vor die App: Login nötig, App bekommt Remote-Email. Wirkt ab dem nächsten Deploy. */
+  async protect(uuid, host, port = 3000) {
+    await this.setLabels(uuid, traefikLabels({ uuid, host, port, protect: true }));
+  }
+
+  /**
+   * App aus einem fertigen Docker-Image (für Plattform-Dienste wie Pocket ID, tinyauth).
+   * opts: { name, image, tag, port, domain?, envs?, storage?: {name, mount}, aliases?, extraLabels?: [], protect? }
+   */
+  async createImageApp(opts) {
+    const { name } = opts;
+    if (!NAME_PATTERN.test(name)) throw new Error(`Ungültiger Name "${name}"`);
+    if (await this.findApp(name)) throw new Error(`Es gibt schon eine App namens "${name}"`);
+    const ids = await this.resolveIds();
+    const url = opts.domain ? `https://${opts.domain}` : null;
+    const body = {
+      project_uuid: ids.project, server_uuid: ids.server, environment_name: ids.environment,
+      docker_registry_image_name: opts.image, docker_registry_image_tag: opts.tag || 'latest',
+      name, ports_exposes: String(opts.port), instant_deploy: false, is_force_https_enabled: true,
+    };
+    if (url) body.domains = url; else body.autogenerate_domain = false;
+    if (opts.aliases) body.custom_network_aliases = opts.aliases;
+    const created = await this.api('/applications/dockerimage', { method: 'POST', body });
+    const uuid = created.uuid;
+    await this.setEnvs(uuid, opts.envs);
+    if (opts.storage) await this.addStorage(uuid, opts.storage.name, opts.storage.mount);
+    if (url && (opts.extraLabels?.length || opts.protect)) {
+      await this.setLabels(uuid, traefikLabels({ uuid, host: opts.domain, port: opts.port, protect: Boolean(opts.protect), extra: opts.extraLabels || [] }));
+    }
+    return { uuid, url, coolifyUrl: `${this.cfg.url}/project/${ids.project}/environment/${ids.environment}/application/${uuid}` };
+  }
+
   /**
    * Legt eine App nach Vertrag an. Gibt {uuid, url} zurück, deployt noch nicht.
-   * opts: { name, repo?, branch?, storage?, envs?: [{key,value}], baseDirectory?, portsMappings?, internal? }
+   * opts: { name, repo?, branch?, storage?, envs?: [{key,value}], baseDirectory?, portsMappings?, internal?, protect? }
    * internal=true: keine öffentliche Domain, Erreichbarkeit nur über portsMappings (also nur Tailscale).
+   * protect=true: Login über tinyauth nötig, die App bekommt den Header Remote-Email.
    */
   async createApp(opts) {
     const { name } = opts;
@@ -142,18 +217,9 @@ export class Coolify {
     const created = await this.api('/applications/private-github-app', { method: 'POST', body });
     const uuid = created.uuid;
 
-    if (opts.envs?.length) {
-      await this.api(`/applications/${uuid}/envs/bulk`, {
-        method: 'PATCH',
-        body: { data: opts.envs.map(({ key, value }) => ({ key, value, is_runtime: true, is_buildtime: false, is_preview: false, is_literal: false })) },
-      });
-    }
-    if (opts.storage) {
-      await this.api(`/applications/${uuid}/storages`, {
-        method: 'POST',
-        body: { type: 'persistent', name: `${name}-data`, mount_path: '/data' },
-      });
-    }
+    await this.setEnvs(uuid, opts.envs);
+    if (opts.storage) await this.addStorage(uuid, `${name}-data`, '/data');
+    if (opts.protect && url) await this.protect(uuid, `${name}.${this.cfg.baseDomain}`);
     return { uuid, url, coolifyUrl: `${this.cfg.url}/project/${ids.project}/environment/${ids.environment}/application/${uuid}` };
   }
 

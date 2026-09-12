@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 // CLI mit derselben Logik wie das Formular. Für Claude Code auf dem Server und für die Erstanlage vom Mac.
 //
-//   new-app <name> [--storage] [--env KEY=WERT ...] [--repo owner/name] [--branch main]
+//   new-app <name> [--storage] [--public] [--env KEY=WERT ...] [--repo owner/name] [--branch main]
 //                  [--base-dir /pfad] [--ports 3100:3000] [--internal] [--no-deploy] [--no-wait]
+//
+// Standard ist geschützt (Login über tinyauth). --public macht die App ohne Login erreichbar.
 //
 // --internal: keine öffentliche Domain; die App ist nur über --ports (und damit nur über Tailscale) erreichbar.
 
@@ -13,6 +15,7 @@ const { values, positionals } = parseArgs({
   allowPositionals: true,
   options: {
     storage: { type: 'boolean', default: false },
+    public: { type: 'boolean', default: false },
     env: { type: 'string', multiple: true, default: [] },
     repo: { type: 'string' },
     branch: { type: 'string' },
@@ -26,7 +29,7 @@ const { values, positionals } = parseArgs({
 });
 
 if (values.help || positionals.length !== 1) {
-  console.log('Aufruf: new-app <name> [--storage] [--env KEY=WERT ...] [--repo owner/name] [--branch main] [--base-dir /pfad] [--ports 3100:3000] [--internal] [--no-deploy] [--no-wait]');
+  console.log('Aufruf: new-app <name> [--storage] [--public] [--env KEY=WERT ...] [--repo owner/name] [--branch main] [--base-dir /pfad] [--ports 3100:3000] [--internal] [--no-deploy] [--no-wait]');
   process.exit(values.help ? 0 : 1);
 }
 
@@ -38,11 +41,11 @@ if (values.internal && !values.ports) { console.error('--internal braucht --port
 const coolify = new Coolify(loadConfig());
 try {
   const created = await coolify.createApp({
-    name, envs, storage: values.storage, repo: values.repo, branch: values.branch,
+    name, envs, storage: values.storage, protect: !values.public && !values.internal, repo: values.repo, branch: values.branch,
     baseDirectory: values['base-dir'], portsMappings: values.ports, internal: values.internal,
   });
   console.log(`App angelegt: ${name} (${created.uuid})`);
-  if (created.url) console.log(`URL: ${created.url}`);
+  if (created.url) console.log(`URL: ${created.url}${values.public ? '' : ' (Login nötig)'}`);
   if (values.ports) console.log(`Port-Mapping: ${values.ports} (nur über Tailscale erreichbar)`);
   console.log(`Coolify: ${created.coolifyUrl}`);
   if (!values.deploy) process.exit(0);

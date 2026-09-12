@@ -94,6 +94,10 @@ export function page({ owner, baseDomain, coolifyUrl }) {
     </div>
 
     <div class="field">
+      <label class="check"><input type="checkbox" id="protect" name="protect" checked><span>Nur mit Login erreichbar</span></label>
+    </div>
+
+    <div class="field">
       <label for="env">Umgebungsvariablen</label>
       <textarea id="env" name="env" placeholder="DATABASE_URL=postgres://…&#10;SOME_FLAG=true"></textarea>
     </div>
@@ -136,7 +140,7 @@ export function page({ owner, baseDomain, coolifyUrl }) {
     let res;
     try {
       const r = await fetch('/api/apps', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, storage: $('#storage').checked, env: $('#env').value }) });
+        body: JSON.stringify({ name, storage: $('#storage').checked, protect: $('#protect').checked, env: $('#env').value }) });
       res = await r.json();
       if (!r.ok) throw new Error(res.error || r.statusText);
     } catch (err) { fail(creating, err.message); return; }
