@@ -42,6 +42,9 @@ try {
     aliases: 'tinyauth',
     envs: [
       { key: 'TINYAUTH_APPURL', value: `https://${authHost}` },
+      // Gleiches Bild und Name wie Pocket ID, damit die kurze Zwischenseite nicht wie ein fremder Dienst aussieht.
+      { key: 'TINYAUTH_UI_TITLE', value: cfg.baseDomain },
+      { key: 'TINYAUTH_UI_BACKGROUNDIMAGE', value: `https://${idHost}/api/application-images/background` },
       { key: 'TINYAUTH_AUTH_TRUSTEDPROXIES', value: '10.0.0.0/8' },
       { key: 'TINYAUTH_AUTH_SECURECOOKIE', value: 'true' },
       { key: 'TINYAUTH_OAUTH_AUTOREDIRECT', value: 'pocketid' },
@@ -64,7 +67,9 @@ try {
   console.log(`
 Nächste Schritte von Hand:
 1. https://${idHost}/setup öffnen, Admin-Konto mit Passkey anlegen.
-2. In Pocket ID: OIDC Clients → neu, Name "tinyauth", Callback URL https://${authHost}/api/oauth/callback/pocketid
+2. In Pocket ID: Anwendungskonfiguration → Name "${cfg.baseDomain}", Hintergrundbild nach Geschmack.
+   OIDC Clients → neu, Name "${cfg.baseDomain}", Callback URL https://${authHost}/api/oauth/callback/pocketid,
+   "Einwilligungsbildschirm überspringen" an, Reiter Qualifikationen → Secret, Reiter Erlaubte Benutzergruppen → Gruppe freigeben.
 3. Client-ID und Client-Secret in Coolify bei "tinyauth" in TINYAUTH_OAUTH_PROVIDERS_POCKETID_CLIENTID / _CLIENTSECRET eintragen, Restart.
 4. Test: https://${authHost} muss zu Pocket ID weiterleiten.`);
 } catch (e) {
