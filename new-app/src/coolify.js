@@ -1,6 +1,18 @@
 // Kleiner Client für die Coolify-REST-API, beschränkt auf das, was der App-Vertrag braucht.
 // Konventionen (Projekt, Environment, Server, GitHub-App, Domain) kommen aus der Umgebung.
 
+import { existsSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+// .env neben package.json einlesen, falls vorhanden. Gesetzte Umgebungsvariablen haben Vorrang.
+const envFile = join(dirname(fileURLToPath(import.meta.url)), '..', '.env');
+if (existsSync(envFile)) {
+  const before = { ...process.env };
+  process.loadEnvFile(envFile);
+  for (const [k, v] of Object.entries(before)) process.env[k] = v;
+}
+
 const required = ['COOLIFY_URL', 'COOLIFY_TOKEN', 'COOLIFY_PROJECT', 'COOLIFY_ENVIRONMENT', 'COOLIFY_SERVER', 'GITHUB_APP', 'GITHUB_OWNER', 'BASE_DOMAIN'];
 
 export function loadConfig(env = process.env) {

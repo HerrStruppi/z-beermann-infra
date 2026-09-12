@@ -7,7 +7,7 @@ Was auf dem Server eingerichtet ist und warum. Ziel: ein Neuaufbau nach dieser D
 | Anbieter | Hetzner Cloud, CX23 (2 vCPU, 4 GB RAM, 40 GB NVMe), Ubuntu 24.04 |
 | Öffentliche IP | 46.224.25.205 (A-Records `@` und `*` bei IONOS zeigen hierhin) |
 | Tailscale-IP | 100.105.58.55, Name `ubuntu-1` |
-| Nutzer | `zacha` (sudo), SSH-Key im 1Password-Agent |
+| Nutzer | `zacha` (sudo ohne Passwort, `/etc/sudoers.d/zacha`), SSH-Key im 1Password-Agent |
 | Coolify | https://deploy.z-beermann.de (öffentlich, Login + 2FA) oder http://100.105.58.55:8000 (nur Tailscale) |
 
 ## Einrichtung, in dieser Reihenfolge
@@ -36,9 +36,11 @@ PubkeyAuthentication yes
 apt update && apt full-upgrade -y && apt install -y unattended-upgrades fail2ban
 dpkg-reconfigure -plow unattended-upgrades   # Yes
 sed -i "s/^#\?\$nrconf{restart} = .*/\$nrconf{restart} = 'a';/" /etc/needrestart/needrestart.conf
+echo '$nrconf{kernelhints} = -1;' > /etc/needrestart/conf.d/no-kernel-hints.conf
 ```
 
-needrestart auf Automatik, sonst bleibt jedes `curl | bash`-Skript (Coolify-Installer) in einem unsichtbaren Dialog hängen.
+needrestart auf Automatik und ohne Kernel-Dialog, sonst bleibt jedes `apt install` oder `curl | bash`-Skript
+(Coolify-Installer) in einem Dialog hängen, der bei Skripten unsichtbar ist. Nach Kernel-Updates selbst `reboot`.
 
 ### 3. Swap
 
@@ -100,6 +102,21 @@ Rechte read/write/deploy) als Env-Variable `COOLIFY_TOKEN`. Erstanlage vom Mac a
 
 Für Claude Code auf dem Server: `~/apps/z-beermann-infra/new-app/.env` mit denselben Variablen, dann
 `node ~/apps/z-beermann-infra/new-app/bin/new-app.js <name>`.
+
+### 8. Claude Code auf dem Server
+
+```bash
+apt install -y tmux gh
+curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && apt install -y nodejs
+# als zacha:
+curl -fsSL https://claude.ai/install.sh | bash        # legt ~/.local/bin/claude an
+gh auth login -p https -w                            # GitHub-Login im Browser
+mkdir -p ~/apps && cd ~/apps && gh repo clone HerrStruppi/z-beermann-infra && gh repo clone HerrStruppi/gym-tracker
+cd ~/apps/z-beermann-infra/new-app && npm ci --omit=dev && cp .env.example .env   # COOLIFY_TOKEN eintragen
+```
+
+Arbeiten: `tmux new -s claude` bzw. `tmux attach -t claude`, darin `claude`. Erster Start meldet sich per Browser-Link an.
+Verlassen ohne Beenden: Ctrl+B, D. Vom iPhone: Claude-App → Remote Control, oder Termius über Tailscale.
 
 ## Prüfen
 
