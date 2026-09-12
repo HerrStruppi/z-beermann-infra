@@ -105,13 +105,15 @@ Für andere Sprachen gilt dasselbe Muster: Build-Stage, schlanke Runtime-Stage (
 Voraussetzung: Das Repo liegt auf GitHub unter `HerrStruppi/<name>`, Branch `main`, und erfüllt die Muss-Liste.
 Dann gibt es zwei gleichwertige Wege, beide legen die App in Coolify an und starten den ersten Build:
 
-1. **Formular** unter `http://ubuntu-1:3100` (nur im Tailscale-Netz erreichbar, später `new.z-beermann.de`):
-   Name eintragen, Häkchen für persistenten Speicher, Umgebungsvariablen, absenden.
+1. **Formular** unter `https://new.z-beermann.de` (Login nötig; im Tailscale-Netz auch `http://ubuntu-1:3100`):
+   Name eintragen, Häkchen für persistenten Speicher und Login, Umgebungsvariablen, absenden.
 2. **Befehl** auf dem Server (oder überall, wo `new-app/.env` mit dem Coolify-Token liegt):
 
    ```bash
-   node ~/apps/z-beermann-infra/new-app/bin/new-app.js <name> [--storage] [--env KEY=WERT ...]
+   node ~/apps/z-beermann-infra/new-app/bin/new-app.js <name> [--storage] [--public] [--env KEY=WERT ...]
    ```
+
+   Apps sind standardmäßig nur mit Login erreichbar und bekommen `Remote-Email`. `--public` für öffentliche Seiten.
 
 Danach läuft die App unter `https://<name>.z-beermann.de`, und jeder Push auf `main` deployt neu.
 Details in [new-app/README.md](new-app/README.md).
@@ -125,5 +127,5 @@ Vercel-Konfiguration, GitHub-Actions-Deploys), sobald die App hier läuft.
 
 Wenn das Repo fertig und auf `main` gepusht ist: Läufst du auf dem Server `ubuntu-1`, führe den Befehl aus
 dem Abschnitt „Deploy“ aus. Läufst du woanders, sag dem Nutzer, dass er die App über das Formular
-`http://ubuntu-1:3100` anlegen kann, und nenne ihm Name, ob persistenter Speicher nötig ist und welche
-Umgebungsvariablen die App braucht.
+`https://new.z-beermann.de` anlegen kann, und nenne ihm Name, ob persistenter Speicher nötig ist, ob die App
+öffentlich oder nur mit Login erreichbar sein soll, und welche Umgebungsvariablen sie braucht.

@@ -122,7 +122,24 @@ Zwei Wege, Claude Code zu benutzen. Nichts läuft dauerhaft auf dem Server.
 | Desktop-App mit SSH-Host `zacha@ubuntu-1` | auf dem Server, nur während der Sitzung | ja | Arbeit am Mac, Server-Aufgaben, new-app-CLI, Logs |
 | Mobile-App, Cloud-Sitzung mit GitHub-Repo | in Anthropics Cloud | nein | Code unterwegs, PR, Merge auf `main` deployt |
 
-Neue Apps vom Handy: Formular unter `new.z-beermann.de` (nach Phase 5). Notfall per Terminal: `ssh zacha@ubuntu-1`, `claude`.
+Neue Apps vom Handy: Formular unter `https://new.z-beermann.de` (Login nötig). Notfall per Terminal: `ssh zacha@ubuntu-1`, `claude`.
+
+### 9. Login: Pocket ID + tinyauth
+
+Angelegt mit `node ~/apps/z-beermann-infra/new-app/bin/setup-auth.js` (zwei Coolify-Apps aus Docker-Images):
+
+| | Domain | Aufgabe |
+|---|---|---|
+| Pocket ID | `id.z-beermann.de` | Nutzer, Gruppen, Passkeys. Admin-UI unter /settings/admin. Volume `pocket-id-data`. |
+| tinyauth | `auth.z-beermann.de` | Forward-Auth vor Traefik, leitet zu Pocket ID, setzt `Remote-Email` / `Remote-Groups`. Netzwerk-Alias `tinyauth`. |
+
+Handarbeit nach dem Skript: Pocket ID `/setup` (Admin mit Passkey), OIDC-Client `tinyauth` mit Callback
+`https://auth.z-beermann.de/api/oauth/callback/pocketid`, Reiter „Qualifikationen“ für das Secret, Reiter
+„Erlaubte Benutzergruppen“ freigeben (Gruppe `familie`), Client-ID und Secret in Coolify bei tinyauth eintragen, Restart.
+
+Eine App schützen heißt: Traefik-Label `…https-0-<uuid>.middlewares=gzip,tinyauth@docker`. Das macht
+`new-app` per Checkbox (Standard an) bzw. `bin/protect.js <name>` für bestehende Apps, `--public` nimmt es weg.
+Geschützt sind: gym-tracker, new-app (`new.z-beermann.de`, zusätzlich weiter Port 3100 über Tailscale).
 
 ## Prüfen
 
@@ -135,4 +152,4 @@ ssh zacha@ubuntu-1 'free -h; docker ps'
 
 ## Noch nicht
 
-Pocket ID + tinyauth (Login), Postgres, Backups (restic), Uptime Kuma, Claude Code auf dem Server. Siehe Plan.
+Postgres, Off-Site-Backups (restic), Uptime Kuma. Siehe Plan.

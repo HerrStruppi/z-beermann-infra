@@ -21,6 +21,13 @@ npm ci
 npm run dev            # http://localhost:3000
 ```
 
+## Weitere Skripte
+
+- `bin/setup-auth.js`: legt Pocket ID und tinyauth an (einmalig, siehe SERVER.md Abschnitt 9).
+- `bin/protect.js <name> [--public]`: bestehende App hinter den Login stellen oder wieder öffnen, deployt neu.
+
+Neue Apps sind standardmäßig geschützt (Checkbox „Nur mit Login erreichbar“, CLI `--public` zum Abschalten).
+
 ## CLI
 
 ```bash
@@ -46,7 +53,8 @@ node bin/new-app.js new-app --repo HerrStruppi/z-beermann-infra --base-dir /new-
   --env GITHUB_APP=coolify-z-beermann --env GITHUB_OWNER=HerrStruppi --env BASE_DOMAIN=z-beermann.de
 ```
 
-Danach: `http://100.105.58.55:3100` (Tailscale-IP des Servers).
+Danach: `http://100.105.58.55:3100` (Tailscale-IP des Servers). Inzwischen hat new-app zusätzlich die Domain
+`https://new.z-beermann.de` hinter dem Login (Domain per API gesetzt, Labels mit `protect: true`).
 
 ## Coolify-API, die benutzt wird
 
