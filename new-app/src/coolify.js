@@ -115,6 +115,7 @@ export class Coolify {
       health_check_return_code: 200,
     };
     if (url) body.domains = url;
+    else body.autogenerate_domain = false; // sonst vergibt Coolify eine öffentliche sslip.io-Adresse
     if (opts.portsMappings) body.ports_mappings = opts.portsMappings;
     const created = await this.api('/applications/private-github-app', { method: 'POST', body });
     const uuid = created.uuid;

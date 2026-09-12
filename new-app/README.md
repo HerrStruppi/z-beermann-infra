@@ -31,7 +31,8 @@ unter `~/apps/z-beermann-infra/new-app/.env`, dann geht `node ~/apps/z-beermann-
 ## Selbst auf der Plattform betreiben
 
 Die App erfüllt den Vertrag und läuft als Coolify-App aus diesem Repo, Unterordner `new-app`.
-Sie bekommt **keine Domain**, sondern ein Port-Mapping, damit sie nur über Tailscale erreichbar ist
+Sie bekommt **keine Domain** (`--internal` setzt `autogenerate_domain: false`, sonst vergibt Coolify eine
+öffentliche sslip.io-Adresse), sondern ein Port-Mapping, damit sie nur über Tailscale erreichbar ist
 (die Firewall lässt aus dem Internet nur 80/443 zu Containern durch):
 
 ```bash
