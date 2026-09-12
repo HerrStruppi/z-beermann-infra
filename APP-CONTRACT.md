@@ -12,8 +12,9 @@ Fälle, keine Vorgabe. Wähle, was zur App passt.
 
 1. **`Dockerfile` im Repo-Root.** `docker build .` muss lokal ohne weitere Argumente funktionieren.
    Multi-Stage: Build-Stage mit allen Dev-Abhängigkeiten, Runtime-Stage so klein wie möglich.
-2. **Ein Prozess, ein Port.** Der Container lauscht auf `0.0.0.0` und dem Port aus der
-   Umgebungsvariable `PORT` (Default `3000`). Kein HTTPS im Container, das macht der Proxy.
+2. **Ein Prozess, ein Port.** Der Container lauscht auf **allen Interfaces, IPv4 und IPv6** (`::`,
+   nicht nur `0.0.0.0`) und dem Port aus der Umgebungsvariable `PORT` (Default `3000`). Grund: Der
+   Healthcheck ruft `localhost` auf, und das ist in Alpine-Images `::1`. Kein HTTPS im Container, das macht der Proxy.
 3. **Konfiguration nur über Umgebungsvariablen.** Keine Secrets im Repo. Alle Variablen mit
    Beispielwerten in `.env.example`. Beim Start fehlende Pflichtvariablen mit klarer Meldung abbrechen.
 4. **Health-Endpoint `GET /healthz`** antwortet `200` mit `ok`, sobald die App Anfragen bedienen kann.
@@ -84,7 +85,8 @@ EXPOSE 3000
 CMD ["node", "dist/server.js"]
 ```
 
-Der Server liest `process.env.PORT ?? 3000`, `process.env.DATABASE_URL` und bedient `/healthz`.
+Der Server liest `process.env.PORT ?? 3000`, `process.env.DATABASE_URL`, bedient `/healthz` und lauscht
+auf `::` (Node: `server.listen(port, '::')`, Hono: `serve({ fetch, port, hostname: '::' })`).
 
 Für andere Sprachen gilt dasselbe Muster: Build-Stage, schlanke Runtime-Stage (z. B. `python:3.13-slim`,
 `golang` → `scratch`/`distroless`), Prozess lauscht auf `PORT`, Nicht-Root-Nutzer wenn möglich.

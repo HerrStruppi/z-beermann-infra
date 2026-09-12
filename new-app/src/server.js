@@ -41,6 +41,7 @@ app.get('/api/deployments/:uuid', async (c) => {
 });
 
 const port = Number(process.env.PORT ?? 3000);
-serve({ fetch: app.fetch, port, hostname: '0.0.0.0' }, () => {
+// '::' = alle Interfaces, IPv4 und IPv6. Der Coolify-Healthcheck ruft localhost auf, das ist in Alpine ::1.
+serve({ fetch: app.fetch, port, hostname: '::' }, () => {
   console.log(`new-app läuft auf :${port}, Coolify: ${cfg.url}, Domain: *.${cfg.baseDomain}`);
 });
