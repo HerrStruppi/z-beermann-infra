@@ -1,0 +1,17 @@
+{
+  "name": "new-app",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Legt eine neue App nach dem z-beermann.de App-Vertrag in Coolify an: Formular und CLI.",
+  "bin": { "new-app": "bin/new-app.js" },
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.14.0",
+    "hono": "^4.7.0"
+  },
+  "engines": { "node": ">=22" }
+}

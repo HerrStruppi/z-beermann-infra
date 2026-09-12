@@ -1,7 +1,8 @@
 # App-Vertrag für z-beermann.de
 
 Kurzanleitung für Menschen und LLMs. Jede Web-App, die auf der Plattform laufen soll,
-erfüllt diese Regeln. Dann ist das Deploy: Repo in Coolify anlegen, Subdomain eintragen, fertig.
+erfüllt diese Regeln. Dann ist das Deploy ein Formular (`new-app`, nur über Tailscale) oder ein Befehl:
+`new-app <name> [--storage] [--env KEY=WERT]`. Siehe [new-app/README.md](new-app/README.md).
 
 **Der Stack ist frei.** Sprache, Framework, Datenbank-Bibliothek, Frontend: alles, was in einem
 Container läuft und die Regeln unten erfüllt. Die Vorlagen weiter unten sind Beispiele für häufige
@@ -94,6 +95,7 @@ Für andere Sprachen gilt dasselbe Muster: Build-Stage, schlanke Runtime-Stage (
 |---|---|
 | Traefik (Proxy) | TLS-Zertifikat, Weiterleitung `<name>.z-beermann.de` → Container-Port |
 | Coolify | Build aus dem Dockerfile bei jedem Push auf `main`, Umgebungsvariablen, Postgres, Volumes, Logs |
+| new-app | Legt eine App mit allen Konventionen per Coolify-API an: Name, Storage ja/nein, Env-Variablen |
 | Pocket ID + tinyauth | Login-Seite und der Header `Remote-Email` für geschützte Apps |
 | Backups | Tägliche Sicherung aller Postgres-Datenbanken und Volumes |
 

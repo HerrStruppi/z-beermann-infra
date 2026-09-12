@@ -92,6 +92,15 @@ curl -fsSL https://cdn.coollabs.io/coolify/install.sh | bash
 
 Coolify-Assistent: „This machine“. Settings → Instance's Domain `https://deploy.z-beermann.de`. Sources → GitHub App `coolify-z-beermann`, alle Repos. Projekt `z-beermann`, Environment `production`.
 
+### 7. new-app (Formular und CLI für neue Apps)
+
+Läuft als Coolify-App aus diesem Repo (Unterordner `new-app`), ohne Domain, mit Port-Mapping `3100:3000`,
+also nur über Tailscale: http://100.105.58.55:3100. Braucht einen Coolify-API-Token (Keys & Tokens,
+Rechte read/write/deploy) als Env-Variable `COOLIFY_TOKEN`. Erstanlage vom Mac aus, siehe `new-app/README.md`.
+
+Für Claude Code auf dem Server: `~/apps/z-beermann-infra/new-app/.env` mit denselben Variablen, dann
+`node ~/apps/z-beermann-infra/new-app/bin/new-app.js <name>`.
+
 ## Prüfen
 
 ```bash
