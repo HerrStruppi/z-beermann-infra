@@ -138,7 +138,7 @@ Handarbeit nach dem Skript: Pocket ID `/setup` (Admin mit Passkey), OIDC-Client 
 „Erlaubte Benutzergruppen“ freigeben (Gruppe `familie`), Client-ID und Secret in Coolify bei tinyauth eintragen, Restart.
 
 Pocket ID → Anwendungskonfiguration → E-Mail: SMTP `smtp.ionos.de`, Port 587, StartTLS, Benutzer und Absender
-`info@z-beermann.de` (Passwort in 1Password). Eingeschaltet: E-Mail-Logincode vom Benutzer (Fallback zum Passkey),
+`noreply@z-beermann.de` (Passwort in 1Password). Eingeschaltet: E-Mail-Logincode vom Benutzer (Fallback zum Passkey),
 E-Mail-Logincode von Administratoren (Einladungen), Benachrichtigung bei Login von neuem Gerät.
 
 Eine App schützen heißt: Traefik-Label `…https-0-<uuid>.middlewares=gzip,tinyauth@docker`. Das macht
