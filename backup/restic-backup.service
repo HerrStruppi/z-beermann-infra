@@ -1,0 +1,10 @@
+[Unit]
+Description=Off-Site-Backup mit restic nach B2
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/z-beermann-backup
+Nice=10
+IOSchedulingClass=idle
