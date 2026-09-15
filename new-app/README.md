@@ -24,7 +24,8 @@ npm run dev            # http://localhost:3000
 ## Weitere Skripte
 
 - `bin/setup-auth.js`: legt Pocket ID und tinyauth an (einmalig, siehe SERVER.md Abschnitt 9).
-- `bin/protect.js <name> [--public]`: bestehende App hinter den Login stellen oder wieder öffnen, deployt neu.
+- `bin/protect.js <name> [--public] [--public-path /pfad] [--env KEY=WERT]`: bestehende App hinter den Login stellen oder wieder
+  öffnen, einzelne Pfad-Präfixe ohne Login lassen (für Token-geschützte APIs), Env-Variablen setzen; deployt neu.
 
 Neue Apps sind standardmäßig geschützt (Checkbox „Nur mit Login erreichbar“, CLI `--public` zum Abschalten).
 

@@ -143,6 +143,9 @@ E-Mail-Logincode von Administratoren (Einladungen), Benachrichtigung bei Login v
 
 Eine App schützen heißt: Traefik-Label `…https-0-<uuid>.middlewares=gzip,tinyauth@docker`. Das macht
 `new-app` per Checkbox (Standard an) bzw. `bin/protect.js <name>` für bestehende Apps, `--public` nimmt es weg.
+Einzelne Pfade ohne Login (z. B. eine Token-geschützte API für Skripte): `bin/protect.js <name> --public-path /api/agent`
+legt einen zweiten Router mit `PathPrefix` und nur `gzip` an; Traefik nimmt die längere Regel zuerst. So läuft `gym-tracker`:
+alles hinter dem Login außer `/api/agent` (Bearer-Token `AGENT_TOKEN`, siehe dort `CLAUDE.md`).
 Geschützt sind: gym-tracker, new-app (`new.z-beermann.de`, zusätzlich weiter Port 3100 über Tailscale).
 
 ## Prüfen

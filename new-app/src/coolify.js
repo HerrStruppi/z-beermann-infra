@@ -52,8 +52,21 @@ export function parseEnvLines(text = '') {
  * Traefik-Labels so, wie Coolify sie für eine App mit einer Domain erzeugt, optional mit tinyauth davor.
  * Coolify versteckt custom_labels in der API-Antwort, deshalb bauen wir sie deterministisch selbst.
  */
-export function traefikLabels({ uuid, host, port = 3000, protect = false, extra = [] }) {
+/**
+ * Traefik-Labels für eine App. publicPaths: Pfad-Präfixe, die auch bei protect ohne Login erreichbar sind
+ * (z. B. eine Token-geschützte API für Skripte). Sie bekommen einen eigenen Router mit längerer Regel,
+ * den Traefik automatisch vor dem allgemeinen Router prüft.
+ */
+export function traefikLabels({ uuid, host, port = 3000, protect = false, extra = [], publicPaths = [] }) {
   const mw = protect ? 'gzip,tinyauth@docker' : 'gzip';
+  const open = publicPaths.flatMap((path, i) => [
+    `traefik.http.routers.https-open${i}-${uuid}.entryPoints=https`,
+    `traefik.http.routers.https-open${i}-${uuid}.middlewares=gzip`,
+    `traefik.http.routers.https-open${i}-${uuid}.rule=Host(\`${host}\`) && PathPrefix(\`${path}\`)`,
+    `traefik.http.routers.https-open${i}-${uuid}.service=https-0-${uuid}`,
+    `traefik.http.routers.https-open${i}-${uuid}.tls.certresolver=letsencrypt`,
+    `traefik.http.routers.https-open${i}-${uuid}.tls=true`,
+  ]);
   return [
     'traefik.enable=true',
     'traefik.http.middlewares.gzip.compress=true',
@@ -70,6 +83,7 @@ export function traefikLabels({ uuid, host, port = 3000, protect = false, extra 
     `traefik.http.routers.https-0-${uuid}.tls=true`,
     `traefik.http.services.http-0-${uuid}.loadbalancer.server.port=${port}`,
     `traefik.http.services.https-0-${uuid}.loadbalancer.server.port=${port}`,
+    ...open,
     ...extra,
   ].join('\n');
 }
